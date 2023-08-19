@@ -1,5 +1,7 @@
 # Detect Objects with Cloud Vision AI
 
+<img width="150" alt="KnowWaste-banner" src="./icon.png"/>
+
 **Author**: Jaunty Brain (**[https://jauntybrain.com/](https://jauntybrain.com/)**)
 
 **Description**: Detects multiple objects in provided images and saves them to Firestore using Cloud Vision API.
