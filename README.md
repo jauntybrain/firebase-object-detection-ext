@@ -1,6 +1,6 @@
 # Detect Objects with Cloud Vision AI
 
-<img width="150" alt="KnowWaste-banner" src="./icon.png"/>
+<img width="150" alt="extension icon" src="./icon.png"/>
 
 **Author**: Jaunty Brain (**[https://jauntybrain.com/](https://jauntybrain.com/)**)
 
