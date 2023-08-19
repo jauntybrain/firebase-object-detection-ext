@@ -16,11 +16,11 @@
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import {ImageAnnotatorClient} from '@google-cloud/vision';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
 import * as logs from './logs';
 import config from './config';
-import {formatObjects, getVisionRequest, shouldDetectObjects} from './util';
-import {IAnnotatedImageResponse} from './types';
+import { formatObjects, getVisionRequest, shouldDetectObjects } from './util';
+import { IAnnotatedImageResponse } from './types';
 
 admin.initializeApp();
 
@@ -36,23 +36,27 @@ export const detectObjects = functions.storage
       return;
     }
 
-    const request = getVisionRequest(object.name!);
+    const bucket = admin.storage().bucket(object.bucket);
+    const imageContents = await bucket.file(object.name!).download();
+    const imageBase64 = Buffer.from(imageContents[0]).toString('base64');
+
+    const request = getVisionRequest(imageBase64);
 
     logs.detectingObjects(object.name!);
-    let results: IAnnotatedImageResponse;
+    let result: IAnnotatedImageResponse;
 
     try {
       if (!client.objectLocalization) {
         throw new Error('Object localization client not initialized.');
       }
-      [results] = await client.objectLocalization!(request);
+      [result] = await client.objectLocalization!(request);
     } catch (error) {
       logs.objectsDetectionError(object.name!, error);
       return;
     }
     logs.objectsDetectionComplete(object.name!);
 
-    let objectAnnotations = results.localizedObjectAnnotations;
+    let objectAnnotations = result.localizedObjectAnnotations;
 
     if (!objectAnnotations) {
       logs.noObjects(object.name!);
@@ -82,7 +86,7 @@ export const detectObjects = functions.storage
         .firestore()
         .collection(config.collectionPath)
         .doc(docId)
-        .set(data, {merge: true});
+        .set(data, { merge: true });
     } else {
       await admin.firestore().collection(config.collectionPath).add(data);
     }
