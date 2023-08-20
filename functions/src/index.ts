@@ -19,7 +19,7 @@ import * as admin from 'firebase-admin';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import * as logs from './logs';
 import config from './config';
-import { formatObjects, getVisionRequest, shouldDetectObjects } from './util';
+import { formatObjects, shouldDetectObjects } from './util';
 import { IAnnotatedImageResponse } from './types';
 
 admin.initializeApp();
@@ -36,11 +36,7 @@ export const detectObjects = functions.storage
       return;
     }
 
-    const bucket = admin.storage().bucket(object.bucket);
-    const imageContents = await bucket.file(object.name!).download();
-    const imageBase64 = Buffer.from(imageContents[0]).toString('base64');
-
-    const request = getVisionRequest(imageBase64);
+    const objectURI = `gs://${object.bucket}/${object.name}`;
 
     logs.detectingObjects(object.name!);
     let result: IAnnotatedImageResponse;
@@ -49,7 +45,7 @@ export const detectObjects = functions.storage
       if (!client.objectLocalization) {
         throw new Error('Object localization client not initialized.');
       }
-      [result] = await client.objectLocalization!(request);
+      [result] = await client.objectLocalization!(objectURI);
     } catch (error) {
       logs.objectsDetectionError(object.name!, error);
       return;
